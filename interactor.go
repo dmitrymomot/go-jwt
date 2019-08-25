@@ -14,7 +14,7 @@ import (
 type (
 	// Interactor interface
 	Interactor interface {
-		New(uid, aid string) (string, error)
+		New(uid, aid, role string) (string, error)
 		NewWithClaims(Claims) (string, error)
 		Parse(token string, claims Claims) error
 		ParseFromRequest(r *http.Request, claims Claims) error
@@ -40,9 +40,9 @@ func NewInteractor(signingKey string, ttl int64, bl blacklist.Blacklist) (Intera
 	return &interactor{[]byte(signingKey), ttl, bl}, nil
 }
 
-func (i *interactor) New(uid, aid string) (string, error) {
+func (i *interactor) New(uid, aid, role string) (string, error) {
 	claims := DefaultClaims{
-		uid, aid,
+		uid, aid, role,
 		jwt.StandardClaims{
 			Id:        uuid.New().String(),
 			ExpiresAt: time.Now().Add(time.Duration(i.ttl) * time.Second).Unix(),

@@ -13,6 +13,7 @@ type (
 	DefaultClaims struct {
 		UserID        string `json:"uid,omitempty"`
 		ApplicationID string `json:"aid,omitempty"`
+		Role          string `json:"rol,omitempty"`
 		jwt.StandardClaims
 	}
 )
