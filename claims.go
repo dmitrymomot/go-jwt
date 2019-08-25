@@ -6,6 +6,7 @@ type (
 	// Claims interface
 	Claims interface {
 		jwt.Claims
+		ID() string
 	}
 
 	// DefaultClaims struct
@@ -15,3 +16,8 @@ type (
 		jwt.StandardClaims
 	}
 )
+
+// ID getter function
+func (c DefaultClaims) ID() string {
+	return c.Id
+}
