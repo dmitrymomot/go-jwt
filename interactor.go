@@ -18,6 +18,7 @@ type (
 		NewWithClaims(Claims) (string, error)
 		Parse(token string, claims Claims) error
 		ParseFromRequest(r *http.Request, claims Claims) error
+		ParseExpired(tokenString string, claims Claims) error
 		GetTokenStringFromRequest(r *http.Request) (string, error)
 		Revoke(tokenID string) error
 		IsRevoked(tokenID string) bool
@@ -28,16 +29,17 @@ type (
 	interactor struct {
 		signingKey []byte
 		ttl        int64
+		refreshTTL int64
 		bl         blacklist.Blacklist
 	}
 )
 
 // NewInteractor factory
-func NewInteractor(signingKey string, ttl int64, bl blacklist.Blacklist) (Interactor, error) {
+func NewInteractor(signingKey string, ttl, refreshTTL int64, bl blacklist.Blacklist) (Interactor, error) {
 	if bl == nil {
 		return nil, ErrBlacklistNotSpecified
 	}
-	return &interactor{[]byte(signingKey), ttl, bl}, nil
+	return &interactor{[]byte(signingKey), ttl, refreshTTL, bl}, nil
 }
 
 func (i *interactor) New(uid, aid, role string) (string, error) {
@@ -71,8 +73,10 @@ func (i *interactor) Parse(tokenString string, claims Claims) error {
 			switch {
 			case ve.Errors&jwt.ValidationErrorMalformed != 0:
 				return ErrTokenMalformed
-			case ve.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0:
+			case ve.Errors&jwt.ValidationErrorExpired != 0:
 				return ErrTokenExpired
+			case ve.Errors&jwt.ValidationErrorNotValidYet != 0:
+				return ErrTokenNotValidYet
 			default:
 				return errors.Wrap(err, "could not handle this token")
 			}
@@ -82,6 +86,39 @@ func (i *interactor) Parse(tokenString string, claims Claims) error {
 	}
 
 	if claims, ok := t.Claims.(Claims); ok && t.Valid {
+		if i.IsRevoked(claims.ID()) {
+			return ErrTokenRevoked
+		}
+		return nil
+	}
+
+	return errors.New("could not handle the token payload")
+}
+
+func (i *interactor) ParseExpired(tokenString string, claims Claims) error {
+	t, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, ErrUnexpectedSigningMethod
+		}
+		return i.signingKey, nil
+	})
+
+	if err != nil {
+		if ve, ok := err.(*jwt.ValidationError); ok {
+			switch {
+			case ve.Errors&jwt.ValidationErrorMalformed != 0:
+				return ErrTokenMalformed
+			case ve.Errors&jwt.ValidationErrorNotValidYet != 0:
+				return ErrTokenNotValidYet
+			default:
+				return errors.Wrap(err, "could not handle this token")
+			}
+		} else {
+			return errors.Wrap(err, "could not handle this token")
+		}
+	}
+
+	if claims, ok := t.Claims.(Claims); ok {
 		if i.IsRevoked(claims.ID()) {
 			return ErrTokenRevoked
 		}
@@ -125,10 +162,16 @@ func (i *interactor) RefreshToken(claims interface{}) (string, error) {
 		cl.Id = uuid.New().String()
 		cl.ExpiresAt = time.Now().Add(time.Duration(i.ttl) * time.Second).Unix()
 		cl.IssuedAt = time.Now().Unix()
+		if time.Unix(cl.ExpiresAt, 0).Add(time.Duration(i.refreshTTL) * time.Second).Before(time.Now()) {
+			return "", ErrCouldNotRefresh
+		}
 	} else if cl, ok := claims.(jwt.StandardClaims); ok {
 		cl.Id = uuid.New().String()
 		cl.ExpiresAt = time.Now().Add(time.Duration(i.ttl) * time.Second).Unix()
 		cl.IssuedAt = time.Now().Unix()
+		if time.Unix(cl.ExpiresAt, 0).Add(time.Duration(i.refreshTTL) * time.Second).Before(time.Now()) {
+			return "", ErrCouldNotRefresh
+		}
 	}
 
 	return i.NewWithClaims(cl)
@@ -136,8 +179,11 @@ func (i *interactor) RefreshToken(claims interface{}) (string, error) {
 
 func (i *interactor) RefreshTokenFromString(tokenString string) (string, error) {
 	cl := new(DefaultClaims)
-	if err := i.Parse(tokenString, cl); err != nil {
+	if err := i.ParseExpired(tokenString, cl); err != nil {
 		return "", err
+	}
+	if time.Unix(cl.ExpiresAt, 0).Add(time.Duration(i.refreshTTL) * time.Second).Before(time.Now()) {
+		return "", ErrCouldNotRefresh
 	}
 	return i.NewWithClaims(cl)
 }
