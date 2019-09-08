@@ -12,7 +12,7 @@ func JWTEcho(ji jwt.Interactor) echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			claims := new(jwt.DefaultClaims)
 			if err := ji.ParseFromRequest(c.Request(), claims); err != nil {
-				return errors.WrapHTTP(err)
+				return errors.New(err)
 			}
 			c.Set(JWTContextKey.String(), claims)
 			return next(c)

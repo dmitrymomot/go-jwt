@@ -6,8 +6,8 @@ github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/dgrijalva/jwt-go v3.2.0+incompatible h1:7qlOGliEKZXTDg6OTjfoBKDXWrumCAMpl/TFQ4/5kLM=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/dmitrymomot/go-errors v0.0.0-20190825223542-86c5707fc791/go.mod h1:uHYzveMjQicgv6cx9AVM6PpnoyphwUaiRsKaeWOhcJ4=
-github.com/dmitrymomot/go-errors v0.0.0-20190825225726-f56c1aa15981 h1:hOyijuP/0e+CoYMHxQh8Z3ozyiNByWveew0g1d+oYks=
-github.com/dmitrymomot/go-errors v0.0.0-20190825225726-f56c1aa15981/go.mod h1:uHYzveMjQicgv6cx9AVM6PpnoyphwUaiRsKaeWOhcJ4=
+github.com/dmitrymomot/go-errors v0.0.0-20190905114320-5216933a9da0 h1:k1ouMjKSGeHGEK5pOI+csm7hv0L4mV6ys+XhOPPCJKI=
+github.com/dmitrymomot/go-errors v0.0.0-20190905114320-5216933a9da0/go.mod h1:uHYzveMjQicgv6cx9AVM6PpnoyphwUaiRsKaeWOhcJ4=
 github.com/dmitrymomot/go-response v0.0.0-20190825224339-1c459b0ee1cf h1:Yd0vJvGmSIbtXG9HonZsNegI1bm9eF7KbAGjkG172/c=
 github.com/dmitrymomot/go-response v0.0.0-20190825224339-1c459b0ee1cf/go.mod h1:0/2D2ltxXdXpEae4Zda1cL8twkqVndWbOe5N7Iqiftc=
 github.com/dmitrymomot/go-utilities v0.0.0-20190825185126-dd30d0a23f51 h1:Bt+VIarPfOFkLf70AXCUysSa53xv5P9YeSaJk0cZPOs=

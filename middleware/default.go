@@ -15,7 +15,7 @@ func JWT(ji jwt.Interactor) func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			claims := new(jwt.DefaultClaims)
 			if err := ji.ParseFromRequest(r, claims); err != nil {
-				response.JSONErr(w, errors.WrapHTTP(err))
+				response.JSONErr(w, errors.New(err))
 				return
 			}
 			ctx := context.WithValue(r.Context(), JWTContextKey, claims)
