@@ -12,7 +12,7 @@ type (
 	Claims interface {
 		jwt.Claims
 		ID() string
-		Exp() int64
+		ExpAt() int64
 		Refresh(ttl int64) Claims
 	}
 
@@ -30,8 +30,8 @@ func (c DefaultClaims) ID() string {
 	return c.Id
 }
 
-// Exp getter function returns expiration time in seconds
-func (c DefaultClaims) Exp() int64 {
+// ExpAt getter function returns expiration time in seconds
+func (c DefaultClaims) ExpAt() int64 {
 	return c.ExpiresAt
 }
 

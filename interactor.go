@@ -159,7 +159,7 @@ func (i *interactor) IsRevoked(tokenID string) bool {
 func (i *interactor) RefreshToken(claims Claims) (string, error) {
 	oldID := claims.ID()
 	cl := claims.Refresh(i.ttl)
-	if time.Unix(cl.Exp(), 0).Add(time.Duration(i.refreshTTL) * time.Second).Before(time.Now()) {
+	if time.Unix(cl.ExpAt(), 0).Add(time.Duration(i.refreshTTL) * time.Second).Before(time.Now()) {
 		return "", ErrCouldNotRefresh
 	}
 	if err := i.bl.Add(oldID); err != nil {
