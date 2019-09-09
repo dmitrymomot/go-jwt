@@ -158,20 +158,22 @@ func (i *interactor) IsRevoked(tokenID string) bool {
 
 func (i *interactor) RefreshToken(claims interface{}) (string, error) {
 	var cl Claims
-	if cl, ok := claims.(DefaultClaims); ok {
-		cl.Id = uuid.New().String()
-		cl.ExpiresAt = time.Now().Add(time.Duration(i.ttl) * time.Second).Unix()
-		cl.IssuedAt = time.Now().Unix()
-		if time.Unix(cl.ExpiresAt, 0).Add(time.Duration(i.refreshTTL) * time.Second).Before(time.Now()) {
+	if c, ok := claims.(DefaultClaims); ok {
+		c.Id = uuid.New().String()
+		c.ExpiresAt = time.Now().Add(time.Duration(i.ttl) * time.Second).Unix()
+		c.IssuedAt = time.Now().Unix()
+		if time.Unix(c.ExpiresAt, 0).Add(time.Duration(i.refreshTTL) * time.Second).Before(time.Now()) {
 			return "", ErrCouldNotRefresh
 		}
-	} else if cl, ok := claims.(jwt.StandardClaims); ok {
-		cl.Id = uuid.New().String()
-		cl.ExpiresAt = time.Now().Add(time.Duration(i.ttl) * time.Second).Unix()
-		cl.IssuedAt = time.Now().Unix()
-		if time.Unix(cl.ExpiresAt, 0).Add(time.Duration(i.refreshTTL) * time.Second).Before(time.Now()) {
+		cl = c
+	} else if c, ok := claims.(jwt.StandardClaims); ok {
+		c.Id = uuid.New().String()
+		c.ExpiresAt = time.Now().Add(time.Duration(i.ttl) * time.Second).Unix()
+		c.IssuedAt = time.Now().Unix()
+		if time.Unix(c.ExpiresAt, 0).Add(time.Duration(i.refreshTTL) * time.Second).Before(time.Now()) {
 			return "", ErrCouldNotRefresh
 		}
+		cl = &DefaultClaims{"", "", "", c}
 	}
 
 	return i.NewWithClaims(cl)
