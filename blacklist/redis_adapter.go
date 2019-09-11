@@ -4,22 +4,26 @@ import "github.com/gomodule/redigo/redis"
 
 type (
 	redisAdapter struct {
-		conn redis.Conn
+		pool *redis.Pool
 		ttl  int64
 	}
 )
 
 // NewRedisAdapter is a factory function
-func NewRedisAdapter(conn redis.Conn, ttl int64) Blacklist {
-	return &redisAdapter{conn: conn, ttl: ttl}
+func NewRedisAdapter(pool *redis.Pool, ttl int64) Blacklist {
+	return &redisAdapter{pool: pool, ttl: ttl}
 }
 
 func (a *redisAdapter) Add(tokenID string) error {
-	_, err := a.conn.Do("SET", tokenID, 1, "EX", a.ttl)
+	conn := a.pool.Get()
+	defer conn.Close()
+	_, err := conn.Do("SET", tokenID, 1, "EX", a.ttl)
 	return err
 }
 
 func (a *redisAdapter) Exists(tokenID string) bool {
-	exists, _ := redis.Bool(a.conn.Do("EXISTS", tokenID))
+	conn := a.pool.Get()
+	defer conn.Close()
+	exists, _ := redis.Bool(conn.Do("EXISTS", tokenID))
 	return exists
 }
