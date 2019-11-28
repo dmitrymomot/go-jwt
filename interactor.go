@@ -92,7 +92,7 @@ func (i *interactor) Parse(tokenString string, claims Claims) error {
 		return nil
 	}
 
-	return errors.New("could not handle the token payload")
+	return ErrCouldNotHandlePayload
 }
 
 func (i *interactor) ParseExpired(tokenString string, claims Claims) error {
@@ -125,7 +125,7 @@ func (i *interactor) ParseExpired(tokenString string, claims Claims) error {
 		return nil
 	}
 
-	return errors.New("could not handle the token payload")
+	return ErrCouldNotHandlePayload
 }
 
 func (i *interactor) ParseFromRequest(r *http.Request, claims Claims) error {

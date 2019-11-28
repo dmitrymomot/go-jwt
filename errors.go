@@ -16,4 +16,5 @@ var (
 	ErrBlacklistNotSpecified   = errors.New("blacklist adapter is not specified")
 	ErrUnexpectedSigningMethod = errors.New("unexpected signing method")
 	ErrCouldNotRefresh         = errors.NewHTTP(http.StatusUnauthorized, "could not refresh token, log in again")
+	ErrCouldNotHandlePayload   = errors.New("could not handle the token payload")
 )
